@@ -1,0 +1,281 @@
+\documentclass{article}
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[english,frenchb]{babel}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\newenvironment{itemize*}%
+  {\vspace*{.1cm}\begin{itemize}%
+      \setlength{\itemsep}{0pt}%
+      \setlength{\parskip}{0pt}}%
+  {\end{itemize}\vspace*{.1cm}}
+
+\begin{document}
+\title{IFT 615: Devoir 1\\ Travail individuel}
+\author{Remise: 26 mai 2017, 17h00 ({\bf au plus tard})}
+\date{}
+\maketitle
+
+Ce devoir comporte 3 questions de programmation. Vous trouverez tous les fichiers
+nécessaires pour ce devoir ici: \url{https://www.dropbox.com/s/w6s3301jubcraj6/devoir_1.zip?dl=0}
+
+\vspace*{.3cm}
+Veuillez soumettre vos solutions à l'aide de l'outil web {\bf \href{http://opus.dinf.usherbrooke.ca/turnin_off}{turnin}}. Les fichiers suivants sont requis:
+
+\begin{verbatim}
+solution_taquin.py solution_tictactoe.py solution_connect4.py
+\end{verbatim}
+
+
+\begin{enumerate}[itemsep=20pt]
+\item {\bf [5 points]} Programmez l'algorithme A* pour résoudre le jeu
+  du taquin à 3$\times$3 cases ({\em 8-puzzle}: \url{http://fr.wikipedia.org/wiki/Taquin}).
+
+  Le programme doit être dans le langage Python. Plus spécifiquement,
+  vous devez remettre un fichier {\tt solution\_taquin.py} contenant une
+  fonction nommée {\tt joueur\_taquin} prenant 4
+  arguments (dans l'ordre):
+  \begin{itemize*}
+  \item {\tt etat\_depart}: Objet de la classe {\tt TaquinEtat} indiquant
+    l'état initial du jeu.
+  \item {\tt fct\_estEtatFinal}: Fonction qui prend en entrée un objet
+    de la classe {\tt TaquinEtat} et qui retourne {\tt True} si l'état
+    passé en paramètre est l'état final.
+  \item {\tt fct\_transitions}: Fonction qui prend en entrée un objet
+    de la classe {\tt TaquinEtat} et qui retourne la liste des états
+    voisins (objets {\tt TaquinEtat}) pour l'état donné.
+    {\bf On suppose que le coût de chaque transition est de 1}.
+  \item {\tt fct\_heuristique}: C'est la fonction heuristique à
+    utiliser.  Cette fonction prend en entrée un objet
+    {\tt TaquinEtat} et retourne l'heuristique pour cet état.
+  \end{itemize*}
+
+  Votre fonction {\tt joueur\_taquin} doit retourner la solution au
+  jeu, c'est-à-dire la liste des objets {\tt TaquinEtat} correspondant
+  à la solution trouvée par A* (de l'état de départ vers l'état final
+  inclusivement, dans l'ordre).
+
+  Un fichier initial {\tt solution\_taquin.py} vous est fourni. Il
+  contient entre autres la définition d'une classe {\tt AEtoileTuple},
+  qui joue le rôle des triplets $(n,f(n),parent)$ utilisés par A* dans ses
+  listes {\it open} et {\it closed}. Cette classe a les méthodes
+  suivantes:
+  \begin{itemize*}
+  \item {\tt \_\_init\_\_(self, etat, f, parent=None)}: Constructeur
+    ayant comme argument {\tt etat} (objet {\tt
+      TaquinEtat}) qui correspond à un état $n$, {\tt f} (nombre à virgule
+    flottante) qui correspond à la valeur de la fonction d'évaluation $f(n)$ pour cet état, ainsi que {\tt parent} (objet
+    {\tt AEtoileTuple}) correspondant au parent de l'état $n$ dans la
+    recherche (avec {\tt None} comme valeur par défaut, appropriée pour la racine de
+    l'arbre de recherche).  Une fois un objet {\tt AEtoileTuple}
+    construit, ces arguments sont accessibles comme des champs de
+    l'objet ({\tt objet.etat}, {\tt objet.f} et {\tt objet.parent}).
+  \item {\tt \_\_eq\_\_(self, autre)}: Retourne {\tt True} si l'objet {\tt
+      autre} (aussi de la classe {\tt AEtoileTuple}) correspond au
+    même état du jeu. Cette méthode est invoquée lors des tests
+    d'égalité ({\tt ==}) entre deux objets. Elle est aussi invoquée
+    implicitement lors des tests d'appartenance ({\tt in}).
+    Ceci permet d'avoir le comportement suivant: si {\tt atuple} est
+    un objet {\tt AEtoileTuple} et que {\tt open} est une liste
+    d'objets {\tt AEtoileTuple}, alors le test {\tt atuple in open}
+    retournera {\tt True} si {\tt open} contient un objet {\tt
+      AEtoileTuple} ayant le même état que {\tt atuple}.
+  \item {\tt \_\_ne\_\_(self, autre)}: Retourne l'inverse de {\tt \_\_eq\_\_(self, autre)}.
+  \item {\tt \_\_cmp\_\_(self, autre)}: Retourne la différence entre
+    la valeur {\tt f} de la fonction d'évaluation et celle de l'objet {\tt
+      autre} (aussi de la classe {\tt AEtoileTuple}).
+      Ceci permet d'avoir le comportement suivant: si {\tt atuple} est
+    un objet {\tt AEtoileTuple} et que {\tt open} est une liste
+    d'objets {\tt AEtoileTuple}, alors l'opération {\tt min(open)}
+    retournera l'objet {\tt AEtoileTuple} ayant le plus petit {\tt f}.
+  \end{itemize*}
+
+  À noter que {\tt parent} doit pointer vers un objet {\tt AEtoileTuple}
+  et non vers un état (objet {\tt TaquinEtat}), afin que vous puissiez
+  remonter vers la racine de l'arbre de recherche et retourner
+  la solution finale, à la fin de A*.
+
+  Le script Python {\tt taquin.py} importera la fonction {\tt
+    joueur\_taquin} contenue dans {\tt solution\_taquin.py} (spécifié via le paramètre {\tt -joueur}) et l'utilisera afin de résoudre le jeu
+  du Taquin à partir d'une configuration initiale fixée.
+
+
+  Voici comment utiliser ce script:
+\begin{verbatim}
+Usage: python taquin.py [-joueur JOUEUR] [-no_partie INT] [-valider FICHIER]
+
+où -joueur    : "humain" ou le fichier contenant votre solution.
+                Défaut = "solution_taquin.py"
+   -no_partie : un entier quelconque
+                Défaut = partie utilisée pour générer "taquin_validation.pkl"
+   -valider   : un fichier permettant de valider votre joueur pour un jeu donné.
+                Défaut = "taquin_validation.pkl"
+
+\end{verbatim}
+
+  Par défaut, le jeu est toujours initialisé à la même configuration
+  et la solution de votre agent est comparée à la solution attendue,
+  contenue dans le fichier {\tt taquin\_validation.pkl} (spécifié via
+  le paramètre {\tt -valider}). Le fichier {\tt
+    taquin\_validation.txt} contient également une impression de la
+  solution attendue. Si vous souhaitez varier la configuration
+  initiale afin de tester votre agent sur d'autres configurations,
+  changez le numéro de partie via le paramètre {\tt -no\_partie} (un entier
+  positif, qui sera utilisé par le générateur aléatoire de
+  configuration comme germe ou {\it seed}).  Notez que certaines
+  configurations pourraient nécessiter plus de temps pour être
+  résolues. Si vous désirez voir comment ce comporte votre agent, utilisez
+  l'option {\tt -v} pour faire afficher la grille après chaque coup.
+
+  {\bf Conseils:} dans le cours, on a toujours considéré que la liste
+  {\it open} était maintenue ordonnée. En fait, il peut être plus
+  simple de seulement s'assurer que le premier élément soit celui
+  associé à la valeur de fonction d'évaluation la plus petite. Vous
+  pouvez même ne pas ordonner la liste du tout et trouver le minimum
+  à chaque fois que vous sortez l'état courant de {\it open}. À vous
+  de décider, pourvu que votre choix donne une implémentation qui
+  ne soit pas trop lente. Finalement, si vous souhaitez analyser
+  l'efficacité de votre code, il suffit d'ajouter {\tt -m cProfile}
+  lors de l'exécution (par exemple {\tt python -m cProfile taquin.py}).
+
+\newpage
+
+\item {\bf [5 points]} Programmez un joueur optimal de {\it
+    tic-tac-toe} en implémentant l'algorithme de recherche
+  alpha-bêta. La recherche alpha-bêta devra donc se faire jusqu'à la
+  profondeur maximale.
+
+  Le programme doit être dans le langage Python. Plus spécifiquement,
+  vous devez remettre un fichier nommé {\tt solution\_tictactoe.py} contenant une
+  fonction nommée {\tt joueur\_tictactoe} prenant 4
+  arguments (dans l'ordre):
+  \begin{itemize*}
+  \item {\tt etat}: Objet {\tt TicTacToeEtat} représentant l'état actuel du jeu.
+  \item {\tt fct\_but}: Une fonction d'utilité prenant un état en argument
+    et qui retourne l'utilité associée à l'état (grand nombre positif
+    si le joueur {\tt 'X'} gagne, grand nombre négatif s'il perd, 0 si
+    c'est une partie nulle). Si l'état ne correspond pas à une partie
+    terminée, {\tt fct\_but} retourne {\tt None}.
+  \item {\tt fct\_transitions}: Une fonction acceptant un état comme
+    argument et donnant en sortie un dictionnaire qui associe chaque
+    action possible (clé du dictionnaire) à l'état qui en résulte
+    (valeur du dictionnaire).
+  \item {\tt str\_joueur}: Le rôle joué par ce joueur, c'est-à-dire {\tt
+      'X'} ou {\tt 'O'} (sous forme d'une chaîne de caractères).
+  \end{itemize*}
+  La fonction {\tt joueur\_tictactoe} doit retourner l'action
+  prise par votre joueur. Cette action doit donc être une clé valide du dictionnaire
+  retourné par {\tt fct\_transitions}.
+
+  Le script Python {\tt tictactoe.py} importera la fonction {\tt
+    joueur\_tictactoe} contenue dans \\{\tt
+    solution\_tictactoe.py} (qui doit être dans le même répertoire) et
+  l'utilisera pour simuler le joueur {\tt 'X'}. Pour tester votre
+  code, vous pouvez jouer vous-même le joueur {\tt 'O'}, invoquer un joueur
+  aléatoire ou utiliser la même fonction {\tt
+    joueur\_tictactoe}. Voici comment utiliser
+  {\tt tictactoe.py}:
+\begin{verbatim}
+Usage: python tictactoe.py [-joueur1 JOUEUR] [-joueur2 JOUEUR]
+
+où -joueur1 : "humain", "aléatoire" ou le fichier contenant votre solution.
+              Défaut = "solution_tictactoe.py"
+   -joueur2 : "humain", "aléatoire" ou le fichier contenant votre solution.
+              Défaut = "solution_tictactoe.py"
+\end{verbatim}
+
+  Si vous désirez voir comment ce comporte votre agent, utilisez
+  l'option {\tt -v} pour faire afficher la grille après chaque coup.
+
+  La correction de votre code se fera
+  de façon automatique, en vérifiant automatiquement l'ensemble des états
+  visités par votre recherche alpha-bêta. Puisque l'ensemble des états
+  visités dépend de l'ordre dans lequel les états successeurs sont générés,
+  on vous demande de {\bf toujours} utiliser l'ordre suggéré par Python
+  en itérant sur les items du dictionnaire:
+
+\begin{verbatim}
+for action,nouvel_etat in fct_transitions(etat).items():
+    # Votre code
+    ...
+
+\end{verbatim}
+
+  {\bf Conseil:} assurez-vous que votre joueur puisse jouer {\bf parfaitement}
+  les {\tt 'X'} ainsi que les {\tt 'O'}.
+
+\newpage
+
+\item {\bf [BONUS]} Implémentez également un joueur pour le jeu
+  Connect~4 (Puissance 4:
+  \url{http://fr.wikipedia.org/wiki/Puissance_4}).
+  Normalement, votre code pour le tic-tac-toe
+  devrait également fonctionner pour Connect~4. Par contre, une
+  recherche jusqu'à la profondeur maximale est trop lente dans le cas
+  de Connect~4. Ainsi, vous devrez l'ajuster afin de limiter la
+  profondeur de la recherche et développer une heuristique pour
+  compenser. Plus votre heuristique sera bonne, plus les chances de
+  gagner de votre joueur seront bonnes.
+
+  Pour ce faire, vous devez remettre un fichier nommé {\tt solution\_connect4.py}
+  contenant une fonction {\tt joueur\_connect4}. Cette
+  fonction doit prendre les mêmes arguments que {\tt
+    joueur\_tictactoe}, en plus d'un cinquième argument:
+  \begin{itemize*}
+  \item {\tt int\_tempsMaximal}: le temps maximal, en secondes, accordé
+    au joueur pour retourner une action.
+  \end{itemize*}
+  Si le joueur prend plus qu'une fois et demi (150\%) du temps
+  maximal accordé pour choisir une action, il sera éliminé et perdra
+  par défaut. S'il prend moins que 150\% du temps, mais plus de 100\%,
+  le temps excédant pris par le joueur sera alors retranché au temps
+  accordé à son tour suivant.
+
+  Pour tenir compte du temps écoulé, vous pouvez utiliser le module
+  standard {\tt time} et sa fonction {\tt time()} qui retourne le
+  temps (en secondes) écoulé depuis le $1^{\rm er}$ janvier 1970 (pour
+  les systèmes Unix). Plus de détails sur le module {\tt time} sont
+  disponibles ici:
+  \url{http://docs.python.org/library/time.html}.
+
+  Pour développer votre fonction d'évaluation heuristique, vous
+  pourrez évaluer la qualité d'un état à partir du champ {\tt
+    etat.tableau} de celui-ci. Ce champ est un tableau Numpy de
+  caractères. Il contient l'information sur l'occupation de chaque
+  case du jeu, à toutes les positions possibles: chaque entrée vaut
+  donc {\tt 'X'}, {\tt 'O'} ou {\tt ' '} (pour une case
+  non occupée). Par exemple, l'état du jeu
+\begin{verbatim}
+| | | | | | | | |
+| | | | | | | | |
+| |X| | | | | | |
+| |X| |O| | | | |
+| |X| |O| | | | |
+| |X| |O| | |O|X|
+-----------------
+ 0 1 2 3 4 5 6 7
+\end{verbatim}
+  correspond à la valeur de {\tt etat.tableau} suivante:
+\begin{verbatim}
+[[' ' ' ' ' ' ' ' ' ' ' ' ' ' ' ']
+ [' ' ' ' ' ' ' ' ' ' ' ' ' ' ' ']
+ [' ' 'X' ' ' ' ' ' ' ' ' ' ' ' ']
+ [' ' 'X' ' ' 'O' ' ' ' ' ' ' ' ']
+ [' ' 'X' ' ' 'O' ' ' ' ' ' ' ' ']
+ [' ' 'X' ' ' 'O' ' ' ' ' 'O' 'X']]
+\end{verbatim}
+
+  L'évaluation de votre solution se fera sous la forme d'un tournoi,
+  où tous les joueurs soumis auront à joueur un contre l'autre. {\bf Deux
+  points boni} seront accordés aux 5 meilleurs joueurs du
+  tournoi. {\bf Un point boni} ira aux 5 suivants. Par contre, pour obtenir
+  ces points, les joueurs devront également avoir fait mieux qu'un
+  joueur (gardé secret) utilisant une heuristique très simple.
+
+\end{enumerate}
+
+
+\end{document}
