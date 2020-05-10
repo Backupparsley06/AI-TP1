@@ -14,9 +14,10 @@ from pdb import set_trace as dbg
 #
 class AEtoileTuple:
 
-    def __init__(self, etat, f, parent=None):
+    def __init__(self, etat, g, h, parent=None):
         self.etat = etat
-        self.f = f
+        self.g = g
+        self.f = g + h
         self.parent = parent
 
     # Fonction de comparaison entre deux AEtoileTuple.
@@ -32,7 +33,40 @@ class AEtoileTuple:
 
 
 def AEtoile(start, isGoal, transitions, heuristique, cost):
-    return [start]
+    open = []
+    closed = []
+    open.append(AEtoileTuple(start, 0, heuristique(start)))
+    while True:
+        n = open.pop(0)
+        closed.append(n)
+        if isGoal(n.etat):
+            result = []
+            while n is not None:
+                result.append(n.etat)
+                n = n.parent
+            return result[::-1]
+        for nPrime in transitions(n.etat):
+            nPrime = AEtoileTuple(nPrime, n.g + cost(n.etat, nPrime), heuristique(nPrime), n)
+            betterValue = True
+            for i in range(len(open)):
+                if nPrime == open[i]:
+                    if nPrime < open[i]:
+                        open.pop(i)
+                        break
+                    else:
+                        betterValue = False
+                        break
+            for i in range(len(closed)):
+                if nPrime == closed[i]:
+                    if nPrime < closed[i]:
+                        closed.pop(i)
+                        break
+                    else:
+                        betterValue = False
+                        break
+            if betterValue:
+                open.append(nPrime)
+                open.sort()
 #
 # joueur_taquin : Fonction qui calcule le chemin, suite d'états, optimal afin de complété
 #                  le puzzle.
