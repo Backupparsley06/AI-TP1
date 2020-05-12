@@ -31,12 +31,43 @@ import numpy as np
 # retour: Cette fonction retourne l'action optimal à joueur pour le joueur actuel c.-à-d. 'str_joueur'.
 ###
 
-
 def joueur_tictactoe(etat,fct_but,fct_transitions,str_joueur):
 
-    #TODO: Implémenter un joueur alpha-beta
+    def tour_max(n, alpha, beta):
+        if fct_but(n) is not None:
+            return fct_but(n), None
+        u = -float("inf")
+        a = None
+        for a_prime, n_prime in fct_transitions(n).items():
+            u_prime, _ = tour_min(n_prime, alpha, beta)
+            if u_prime > u:
+                a = a_prime
+                u = u_prime
+            if u >= beta:
+                return u, a
+            alpha = max(alpha, u)
+        return u, a
+
+    def tour_min(n, alpha, beta):
+        if fct_but(n) is not None:
+            return fct_but(n), None
+        u = float("inf")
+        a = None
+        for a_prime, n_prime in fct_transitions(n).items():
+            u_prime, _ = tour_max(n_prime, alpha, beta)
+            if u_prime < u:
+                a = a_prime
+                u = u_prime
+            if u <= alpha:
+                return u, a
+            beta = max(beta, u)
+        return u, a
 
     # Retourne une action aléatoire (.~= À MODIFIER =~.)
+    # action = random.choice(list(fct_transitions(etat)))
+    if str_joueur == 'X':
+        _, action = tour_max(etat, -float("inf"), float("inf"))
+    else:
+        _, action = tour_min(etat, -float("inf"), float("inf"))
 
-    action = random.choice(list(fct_transitions(etat)))
     return action

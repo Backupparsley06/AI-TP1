@@ -52,18 +52,16 @@ def AEtoile(start, isGoal, transitions, heuristique, cost):
                 if nPrime == open[i]:
                     if nPrime < open[i]:
                         open.pop(i)
-                        break
                     else:
                         betterValue = False
-                        break
+                    break
             for i in range(len(closed)):
                 if nPrime == closed[i]:
                     if nPrime < closed[i]:
                         closed.pop(i)
-                        break
                     else:
                         betterValue = False
-                        break
+                    break
             if betterValue:
                 open.append(nPrime)
                 open.sort()
